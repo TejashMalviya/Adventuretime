@@ -3,61 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adventure Roadmap & GFG Challenge Tracker</title>
+    <title>Grand Shinobi Adventure: Coder's Voyage</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; overflow: hidden; }
-        .font-title { font-family: 'IM Fell English SC', serif; }
+        .font-title { font-family: 'Bangers', cursive; letter-spacing: 2px; }
+        
+        /* --- Live Map Animations --- */
         #adventure-map-section {
-            background-image: url('https://placehold.co/1600x600/0c4a6e/38bdf8?text=Your+Grand+Adventure');
-            background-size: cover; background-position: center;
+            background-color: #0a1931; /* Solid color background, image removed */
+            background-size: 150% auto; /* Make background larger to allow panning */
+            background-position: center;
+            animation: pan-background 40s linear infinite alternate;
         }
+
+        @keyframes pan-background {
+            from { background-position: 0% 50%; }
+            to { background-position: 100% 50%; }
+        }
+
+        #map-path {
+            stroke-dasharray: 12 12;
+            animation: flow-path 2s linear infinite;
+        }
+
+        @keyframes flow-path {
+            from { stroke-dashoffset: 24; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        .star {
+            animation: twinkle 4s ease-in-out infinite;
+        }
+        .star:nth-child(2) { animation-delay: 0.5s; animation-duration: 3s; }
+        .star:nth-child(3) { animation-delay: 1s; animation-duration: 5s; }
+        .star:nth-child(4) { animation-delay: 1.5s; animation-duration: 3.5s; }
+        .star:nth-child(5) { animation-delay: 2s; animation-duration: 4.5s; }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        /* --- End Live Map Animations --- */
+
         #player-avatar { transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1); filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
         #roadmap-section { background-color: #1e1e1e; color: #d4d4d4; }
         .roadmap-list::-webkit-scrollbar { width: 10px; }
         .roadmap-list::-webkit-scrollbar-track { background: #2a2a2a; }
-        .roadmap-list::-webkit-scrollbar-thumb { background-color: #854d0e; border-radius: 5px; border: 2px solid #2a2a2a; }
+        .roadmap-list::-webkit-scrollbar-thumb { background-color: #e63946; border-radius: 5px; border: 2px solid #2a2a2a; }
+        
+        /* Card Styling & Animation */
         .day-card {
             background-color: #2a2a2a; border-left: 5px solid #4a4a4a;
-            transition: all 0.2s ease-in-out; cursor: pointer;
+            transition: all 0.3s ease-in-out; cursor: pointer;
+            opacity: 0; /* Hidden by default for animation */
+            transform: translateY(20px); /* Start slightly lower for animation */
         }
-        .day-card.status-completed { border-left-color: #16a34a; }
-        .day-card.status-active { border-left-color: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
-        .day-card:hover { transform: translateY(-3px); background-color: #3a3a3a; }
+        .day-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .day-card.status-completed { border-left-color: #16a34a; background-color: #2a2a2a; }
+        .day-card.status-active { border-left-color: #fca311; box-shadow: 0 0 15px rgba(252, 163, 17, 0.4); }
+        .day-card:hover { transform: scale(1.02); background-color: #3a3a3a; }
+        
         #task-modal { transition: opacity 0.3s ease-in-out; }
         .modal-content { 
             transition: transform 0.3s ease-in-out; background-color: #2a2a2a;
-            border: 2px solid #854d0e; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 2px solid #c97b41; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
+        .modal-title-one-piece { font-family: 'Bangers', cursive; color: #c97b41; text-shadow: 2px 2px #000; }
     </style>
 </head>
 <body class="text-white">
 
     <div class="flex flex-col h-screen">
         <!-- Top Section: Adventure Map -->
-        <div id="adventure-map-section" class="relative w-full h-1/2 border-b-4 border-amber-800">
+        <div id="adventure-map-section" class="relative w-full h-1/2 border-b-4 border-[#c97b41]">
             <svg id="adventure-map" class="absolute inset-0 w-full h-full" viewBox="0 0 1600 600" preserveAspectRatio="xMidYMid slice">
-                <path id="map-path" d="M 100 500 C 250 350, 400 400, 550 250 S 800 100, 950 200 S 1200 450, 1500 400" stroke="#000000" stroke-opacity="0.4" stroke-width="6" fill="none" stroke-dasharray="12 12"/>
+                <!-- Twinkling Stars -->
+                <g id="stars">
+                    <circle class="star" cx="200" cy="150" r="2" fill="white"/>
+                    <circle class="star" cx="600" cy="80" r="3" fill="white"/>
+                    <circle class="star" cx="1000" cy="120" r="2" fill="white"/>
+                    <circle class="star" cx="1400" cy="100" r="2.5" fill="white"/>
+                    <circle class="star" cx="1200" cy="300" r="2" fill="white"/>
+                </g>
+                <path id="map-path" d="M 100 500 C 250 350, 400 400, 550 250 S 800 100, 950 200 S 1200 450, 1500 400" stroke="#ffffff" stroke-opacity="0.3" stroke-width="6" fill="none"/>
                 <g id="map-locations"></g>
+                <!-- Avatar: A ship with a ninja-style flag -->
                 <g id="player-avatar" transform="translate(100, 500)">
-                    <path d="M 0 -25 L 18 0 L 0 8 L -18 0 Z" fill="#e11d48"/><circle cx="0" cy="0" r="15" fill="#f43f5e"/>
-                    <text y="40" text-anchor="middle" font-size="18" fill="#fff" font-weight="bold" class="font-title" style="filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));">Hero</text>
+                    <path d="M -20 10 L 20 10 L 15 -10 L -15 -10 Z" fill="#8B4513"/>
+                    <path d="M 0 -10 L 0 -30" stroke="black" stroke-width="4"/>
+                    <path d="M 0 -30 L 15 -25 L 0 -20 Z" fill="#fca311"/>
+                    <text y="35" text-anchor="middle" font-size="18" fill="#fff" font-weight="bold" class="font-title" style="filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));">You</text>
                 </g>
             </svg>
             <!-- Journal Button -->
-            <a href="learning-journal.html" target="_blank" class="absolute top-4 right-4 bg-amber-800 text-white font-title py-2 px-5 rounded-lg hover:bg-amber-900 transition shadow-lg flex items-center space-x-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <span>My Journal</span>
+            <a href="learning-journal.html" target="_blank" class="absolute top-4 right-4 bg-[#fca311] text-black font-title py-2 px-5 rounded-lg hover:bg-yellow-400 transition shadow-lg flex items-center space-x-2">
+                <span>Shinobi Scroll</span>
             </a>
         </div>
 
-        <!-- Bottom Section: GFG Roadmap -->
+        <!-- Bottom Section: Roadmap -->
         <div id="roadmap-section" class="w-full h-1/2 flex flex-col p-4">
-            <h1 class="font-title text-4xl text-center text-amber-500 pb-2 mb-4">GFG 160-Day Roadmap</h1>
-            <div id="roadmap-list" class="flex-grow overflow-y-auto roadmap-list pr-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <h1 class="font-title text-4xl text-center text-[#fca311] pb-2 mb-4">Coder's Bounty List</h1>
+            <div id="roadmap-list" class="flex-grow overflow-y-auto roadmap-list pr-3 flex flex-col items-center space-y-4">
                 <!-- Day cards will be injected here by JS -->
             </div>
         </div>
@@ -66,23 +120,24 @@
     <!-- Quest Editor Modal -->
     <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
         <div class="modal-content p-6 w-full max-w-3xl rounded-lg transform scale-95 text-gray-200">
-            <h3 id="modal-title" class="font-title text-3xl text-amber-500 mb-4">Quest Details</h3>
+            <h3 id="modal-title" class="modal-title-one-piece text-5xl mb-2 text-center">WANTED</h3>
+            <p id="modal-date" class="text-center text-amber-500 -mt-2 mb-4 font-semibold"></p>
             <input type="hidden" id="modal-quest-day">
             <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                <input type="text" id="modal-quest-question" placeholder="Today's question or goal..." class="w-full p-3 bg-transparent border-b-2 border-amber-800 focus:outline-none focus:border-amber-600 transition font-semibold text-lg">
-                <textarea id="modal-quest-notes" placeholder="Your notes, solution, and thoughts..." rows="10" class="w-full p-3 bg-gray-800 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-600 transition"></textarea>
+                <input type="text" id="modal-quest-question" placeholder="Bounty Target..." class="w-full p-3 bg-transparent border-b-2 border-amber-800 focus:outline-none focus:border-amber-600 transition font-semibold text-lg">
+                <textarea id="modal-quest-notes" placeholder="Jutsu & Strategies..." rows="10" class="w-full p-3 bg-gray-800 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-600 transition"></textarea>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input type="text" id="modal-quest-topic" placeholder="Topic (e.g., Arrays)" class="w-full p-2 bg-transparent border-b-2 border-amber-800 focus:outline-none focus:border-amber-600 transition">
+                    <input type="text" id="modal-quest-topic" placeholder="Type (e.g., Fire, Water)" class="w-full p-2 bg-transparent border-b-2 border-amber-800 focus:outline-none focus:border-amber-600 transition">
                     <select id="modal-quest-difficulty" class="w-full p-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-amber-600 transition">
-                        <option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
+                        <option value="Easy">Genin</option><option value="Medium">Chunin</option><option value="Hard">Jonin</option>
                     </select>
                 </div>
             </div>
             <div class="flex justify-between items-center mt-6">
-                <button id="modal-complete-btn" class="bg-green-700 text-white font-title py-2 px-5 rounded-lg hover:bg-green-800 transition">Complete Quest</button>
+                <button id="modal-complete-btn" class="bg-green-700 text-white font-title py-2 px-5 rounded-lg hover:bg-green-800 transition">Mission Complete</button>
                 <div>
-                    <button id="modal-cancel-btn" class="font-title py-2 px-4 rounded-lg hover:bg-gray-700 transition mr-2">Close</button>
-                    <button id="modal-save-btn" class="bg-amber-800 text-white font-title py-2 px-5 rounded-lg hover:bg-amber-900 transition">Save</button>
+                    <button id="modal-cancel-btn" class="font-title py-2 px-4 rounded-lg hover:bg-gray-700 transition mr-2">Flee</button>
+                    <button id="modal-save-btn" class="bg-amber-800 text-white font-title py-2 px-5 rounded-lg hover:bg-amber-900 transition">Update Log</button>
                 </div>
             </div>
         </div>
@@ -97,6 +152,7 @@
 
         const taskModal = document.getElementById('task-modal');
         const modalTitle = document.getElementById('modal-title');
+        const modalDate = document.getElementById('modal-date');
         const modalQuestDay = document.getElementById('modal-quest-day');
         const modalQuestQuestion = document.getElementById('modal-quest-question');
         const modalQuestNotes = document.getElementById('modal-quest-notes');
@@ -108,24 +164,44 @@
 
         const TOTAL_DAYS = 160;
         let quests = [];
-        const milestoneMarkers = { 20: "Whispering Woods", 40: "Riverbend", 60: "Stonefall", 80: "Crystal Mountains", 100: "The Great Plains", 120: "Dragon's Peak", 140: "The Forgotten City", 160: "Journey's End" };
+        const milestoneMarkers = { 
+            1: "Pallet Town", 20: "Hidden Leaf Village", 40: "Alabasta", 60: "Saffron City Gym", 80: "Valley of the End", 100: "Enies Lobby", 120: "Elite Four", 160: "Laugh Tale" 
+        };
         const gfgQuestions = [
-            "Reverse a string", "Find the maximum and minimum element in an array", "Kth smallest element", "Sort an array of 0s, 1s and 2s", "Move all negative numbers to beginning", "Find the Union and Intersection of two sorted arrays", "Kadane's Algorithm", "Minimize the Heights II", "Minimum number of jumps", "Find the duplicate in an array of N+1 integers", "Merge Two Sorted Arrays", "Merge Intervals", "Next Permutation", "Count Inversions", "Best Time to Buy and Sell Stock", "Find all pairs on integer array whose sum is equal to given number", "Find common elements in three sorted arrays", "Find first and last positions of an element in a sorted array", "Find a value in a rotated sorted array", "Search in a 2D matrix", "Median of two sorted arrays of different sizes"
+            "Capture Rattata: Reverse a string", "Challenge Brock: Find min/max in array", "Kth Smallest Magikarp", "Team Rocket's Sorting Problem", "Move all Gastly to beginning", "Pokédex Union & Intersection", "Pikachu's Kadane's Algorithm", "Minimize Mt. Moon's Heights", "Geodude's Minimum Jumps", "Find the duplicate Ditto", "Merge Two Sorted Trainer Lists", "Merge Potion Intervals", "Next Team Combination", "Count Inversions in a Pokémon Battle", "Best Time to Buy and Sell Pokéballs", "Find Pokémon Pairs with Given CP Sum", "Find common Pokémon in three teams", "Find first and last appearance of a Pokémon", "Find a value in a rotated Pokémon list", "Search in a 2D Pokémon Box", "Median CP of two teams"
         ];
 
         function generateInitialQuests() {
-            return Array.from({ length: TOTAL_DAYS }, (_, i) => ({
-                day: i + 1, status: i === 0 ? 'active' : 'locked',
-                question: gfgQuestions[i] || `Day ${i + 1} Challenge`, 
-                notes: '', topic: 'Arrays', difficulty: 'Medium'
-            }));
+            const startDate = new Date('2025-08-20T00:00:00');
+            return Array.from({ length: TOTAL_DAYS }, (_, i) => {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                const dateString = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+                return {
+                    day: i + 1, status: i === 0 ? 'active' : 'locked',
+                    question: gfgQuestions[i] || `Bounty #${i + 1}`, 
+                    date: dateString,
+                    notes: '', topic: 'Arrays', difficulty: 'Genin'
+                };
+            });
         }
 
-        function saveData() { localStorage.setItem('adventureRoadmapPro', JSON.stringify(quests)); }
+        function saveData() { localStorage.setItem('animeAdventure', JSON.stringify(quests)); }
         function loadData() {
-            const saved = localStorage.getItem('adventureRoadmapPro');
+            const saved = localStorage.getItem('animeAdventure');
             quests = saved ? JSON.parse(saved) : generateInitialQuests();
         }
+
+        // --- Animation Observer ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
 
         function renderAll() {
             renderRoadmap();
@@ -134,22 +210,33 @@
 
         function renderRoadmap() {
             roadmapList.innerHTML = '';
-            quests.forEach(quest => {
+            // Filter to show only completed and the single active quest
+            const visibleQuests = quests.filter(q => q.status === 'completed' || q.status === 'active');
+
+            visibleQuests.forEach(quest => {
                 const card = document.createElement('div');
-                card.className = `day-card p-4 rounded-lg status-${quest.status}`;
+                card.className = `day-card p-4 rounded-lg status-${quest.status} w-full max-w-2xl`;
                 card.dataset.day = quest.day;
-                if (quest.status !== 'locked') {
-                    card.onclick = () => openModal(quest.day);
-                }
+                
+                // Only active and completed cards are clickable
+                card.onclick = () => openModal(quest.day);
+                
                 card.innerHTML = `
                     <div class="flex justify-between items-center mb-1">
-                        <span class="font-title text-lg">Day ${quest.day}</span>
-                        <span class="text-xs font-semibold ${quest.status === 'completed' ? 'text-green-400' : 'text-gray-400'}">${quest.status.toUpperCase()}</span>
+                        <span class="font-title text-lg">Bounty ${quest.day}</span>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-xs text-gray-400">${quest.date}</span>
+                            <span class="text-xs font-semibold ${quest.status === 'completed' ? 'text-green-400' : 'text-gray-400'}">${quest.status.toUpperCase()}</span>
+                        </div>
                     </div>
                     <p class="text-gray-300 truncate">${quest.question}</p>
                 `;
                 roadmapList.appendChild(card);
+                // Observe the new card for animation
+                observer.observe(card);
             });
+            // Auto-scroll to the bottom to see the latest active task
+            roadmapList.scrollTop = roadmapList.scrollHeight;
         }
 
         function renderMap() {
@@ -163,7 +250,7 @@
                 const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                 g.setAttribute('transform', `translate(${point.x}, ${point.y})`);
                 g.innerHTML = `
-                    <circle r="15" stroke="#fde047" stroke-width="4" fill="${day <= completedDays ? '#16a34a' : '#854d0e'}"></circle>
+                    <circle r="15" stroke="#fde047" stroke-width="4" fill="${day <= completedDays + 1 ? '#e63946' : '#1d3557'}"></circle>
                     <text y="-25" text-anchor="middle" font-size="20" fill="#fff" class="font-title" style="filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8))">${name}</text>
                 `;
                 mapLocationsContainer.appendChild(g);
@@ -178,8 +265,8 @@
             const quest = quests.find(q => q.day === day);
             if (!quest) return;
 
-            modalTitle.textContent = `Quest Details: Day ${day}`;
             modalQuestDay.value = day;
+            modalDate.textContent = quest.date;
             modalQuestQuestion.value = quest.question;
             modalQuestNotes.value = quest.notes;
             modalQuestTopic.value = quest.topic;
@@ -203,12 +290,12 @@
             const day = parseInt(modalQuestDay.value);
             const questIndex = quests.findIndex(q => q.day === day);
             if (questIndex !== -1) {
-                quests[questIndex].question = modalQuestQuestion.value.trim() || `Day ${day} Challenge`;
+                quests[questIndex].question = modalQuestQuestion.value.trim() || `Bounty #${day}`;
                 quests[questIndex].notes = modalQuestNotes.value.trim();
                 quests[questIndex].topic = modalQuestTopic.value.trim();
                 quests[questIndex].difficulty = modalQuestDifficulty.value;
                 saveData();
-                renderRoadmap(); // Only need to re-render the list
+                renderRoadmap();
             }
             closeModal();
         }
@@ -221,9 +308,10 @@
                 if (day < TOTAL_DAYS) {
                     quests[questIndex + 1].status = 'active';
                 }
-                handleSave(); // Save data before closing
-                renderAll(); // Re-render everything to show progress
+                saveData();
+                renderAll(); // Re-render everything to show progress and the new card
             }
+            closeModal();
         }
 
         modalSaveBtn.addEventListener('click', handleSave);
