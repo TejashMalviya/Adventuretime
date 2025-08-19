@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Ninja Way: A Journal of Ideas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Lora', serif; 
+            background-color: #0a0a0a;
+            background-image: url('https://placehold.co/1920x1080/0a122a/ffffff?text=Hidden+Leaf+at+Night');
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+        .font-title { font-family: 'Bangers', cursive; letter-spacing: 2px; }
+        
+        /* Main scroll container */
+        .scroll-container {
+            background-color: #fdf3d5; /* Parchment color */
+            border: 2px solid #4a2e00;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            position: relative;
+            padding: 20px 40px;
+            animation: unfurl 1s ease-out forwards;
+            transform: translateY(-100%);
+        }
+
+        @keyframes unfurl {
+            to { transform: translateY(0); }
+        }
+
+        /* Wooden rollers for the scroll */
+        .scroll-container::before, .scroll-container::after {
+            content: '';
+            position: absolute;
+            left: -20px;
+            right: -20px;
+            height: 40px;
+            background-color: #4a2e00;
+            border: 4px solid #3a2200;
+            border-radius: 20px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .scroll-container::before { top: -20px; }
+        .scroll-container::after { bottom: -20px; }
+
+        .sidebar::-webkit-scrollbar { width: 8px; }
+        .sidebar::-webkit-scrollbar-track { background: #d1b777; }
+        .sidebar::-webkit-scrollbar-thumb { background-color: #ff9900; border-radius: 4px; }
+        
+        .editor { min-height: 40vh; outline: none; background-color: #fff; }
+        .editor-toolbar button:hover { background-color: #eee8d5; }
+        
+        .day-link { border-bottom: 1px solid #d1b777; }
+        .day-link.active { background-color: #ff9900; color: #fff; border-radius: 5px; }
+        .day-link.completed::after { content: '✔'; color: #27ae60; margin-left: auto; font-weight: bold; }
+
+        .save-button {
+            box-shadow: 0 0 10px rgba(255, 153, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        .save-button:hover {
+            box-shadow: 0 0 20px rgba(255, 153, 0, 1);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center h-screen p-8">
+
+    <div class="scroll-container w-full max-w-6xl h-[90vh] rounded-lg flex gap-6">
+        <!-- Sidebar Navigation -->
+        <aside class="w-1/3 h-full flex flex-col bg-black bg-opacity-10 rounded-lg p-2">
+            <h2 class="font-title text-4xl text-center p-4 text-[#4a2e00]">Mission Scrolls</h2>
+            <nav id="day-navigation" class="flex-grow overflow-y-auto sidebar pr-2 space-y-1">
+                <!-- Day links will be injected here -->
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="w-2/3 h-full flex flex-col">
+            <header class="text-center py-4">
+                 <h1 class="font-title text-5xl tracking-wider text-[#ff9900]" style="text-shadow: 2px 2px #4a2e00;">My Ninja Way of Thinking</h1>
+            </header>
+
+            <div class="flex-grow p-6 overflow-y-auto bg-black bg-opacity-5 rounded-lg">
+                <h3 id="idea-title" class="text-4xl font-bold mb-4 text-[#2c3e50]"></h3>
+                
+                <div class="editor-toolbar flex items-center space-x-2 border border-[#d3cbbd] p-2 rounded-t-lg bg-gray-100">
+                    <button data-command="bold" class="p-2 rounded hover:bg-gray-200" title="Bold"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m6 0a3 3 0 100-6H9a3 3 0 000 6h6zm0 0a3 3 0 110 6H9a3 3 0 010-6h6z"></path></svg></button>
+                    <button data-command="italic" class="p-2 rounded hover:bg-gray-200" title="Italic"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5L6 19M18 5l-5 14"></path></svg></button>
+                    <button data-command="insertUnorderedList" class="p-2 rounded hover:bg-gray-200" title="Bulleted List"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg></button>
+                </div>
+
+                <div id="editor" contenteditable="true" class="editor p-6 border-b border-l border-r border-[#d3cbbd] rounded-b-lg focus:ring-2 focus:ring-[#ff9900]"></div>
+            </div>
+             <footer class="p-4 text-center">
+                <button id="save-btn" class="save-button bg-[#ff9900] text-white font-title text-2xl py-2 px-10 rounded-lg hover:bg-[#e68a00] transition shadow-lg">Seal the Scroll</button>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dayNavigation = document.getElementById('day-navigation');
+        const ideaTitle = document.getElementById('idea-title');
+        const editor = document.getElementById('editor');
+        const saveBtn = document.getElementById('save-btn');
+        const toolbar = document.querySelector('.editor-toolbar');
+
+        const TOTAL_IDEAS = 1001;
+        let ideasData = [];
+        let currentDay = 1;
+
+        const ideaTitles = [ "The Wheel", "Lever", "Alphabet", "Zero", "Printing Press", "Gravity", "Evolution", "Relativity", "The Internet", "Democracy" ];
+
+        function generateInitialData() {
+            return Array.from({ length: TOTAL_IDEAS }, (_, i) => ({
+                day: i + 1,
+                title: ideaTitles[i] || `Idea #${i + 1}`,
+                notes: '',
+                completed: false
+            }));
+        }
+
+        function saveData() {
+            localStorage.setItem('learningJournal1001', JSON.stringify(ideasData));
+            alert('Your entry has been saved locally!');
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('learningJournal1001');
+            ideasData = saved ? JSON.parse(saved) : generateInitialData();
+        }
+
+        function renderSidebar() {
+            dayNavigation.innerHTML = '';
+            ideasData.forEach(idea => {
+                const link = document.createElement('a');
+                link.href = '#';
+                link.innerHTML = `<span>Day ${idea.day}: ${idea.title}</span>`;
+                link.className = `day-link flex items-center p-2 rounded transition hover:bg-[#ffbf66] ${idea.completed ? 'completed' : ''}`;
+                link.dataset.day = idea.day;
+                if (idea.day === currentDay) {
+                    link.classList.add('active');
+                }
+                dayNavigation.appendChild(link);
+            });
+        }
+
+        function loadDay(day) {
+            currentDay = parseInt(day, 10);
+            const idea = ideasData.find(i => i.day === currentDay);
+            if (idea) {
+                ideaTitle.textContent = `Scroll ${idea.day}: ${idea.title}`;
+                editor.innerHTML = idea.notes || '<p>What did you learn on your mission today?</p>';
+                
+                document.querySelectorAll('.day-link').forEach(l => l.classList.remove('active'));
+                const activeLink = document.querySelector(`.day-link[data-day='${currentDay}']`);
+                if(activeLink) {
+                    activeLink.classList.add('active');
+                    activeLink.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function handleSave() {
+            const ideaIndex = ideasData.findIndex(i => i.day === currentDay);
+            if (ideaIndex !== -1) {
+                const notesContent = editor.innerHTML.trim();
+                ideasData[ideaIndex].notes = notesContent;
+                if (notesContent && notesContent !== '<p>What did you learn on your mission today?</p>') {
+                    ideasData[ideaIndex].completed = true;
+                }
+                saveData();
+                renderSidebar();
+            }
+        }
+
+        dayNavigation.addEventListener('click', (e) => {
+            const link = e.target.closest('.day-link');
+            if (link) {
+                e.preventDefault();
+                loadDay(link.dataset.day);
+            }
+        });
+
+        toolbar.addEventListener('click', (e) => {
+            const button = e.target.closest('button');
+            if (button) {
+                document.execCommand(button.dataset.command, false, null);
+                editor.focus();
+            }
+        });
+        
+        saveBtn.addEventListener('click', handleSave);
+
+        function initJournal() {
+            loadData();
+            renderSidebar();
+            loadDay(currentDay);
+        }
+
+        initJournal();
+    });
+    </script>
+</body>
+</html>
